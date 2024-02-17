@@ -19,7 +19,10 @@ router.post("/api/shorten", async (ctx) => {
   }
 
   // authorise
-  if (userName !== config.USER_NAME || userPass !== config.USER_PASS) {
+  if (
+    userName !== config.SHORTENER_USERNAME ||
+    userPass !== config.SHORTENER_PASSWORD
+  ) {
     ctx.response.status = 401;
     ctx.response.body = { error: "Unauthorized" };
     return;
@@ -45,7 +48,10 @@ router.post("/api/getURL", async (ctx) => {
   }
 
   // authorise
-  if (userName !== config.USER_NAME || userPass !== config.USER_PASS) {
+  if (
+    userName !== config.SHORTENER_USERNAME ||
+    userPass !== config.SHORTENER_PASSWORD
+  ) {
     ctx.response.status = 401;
     ctx.response.body = { error: "Unauthorized" };
     return;
@@ -65,7 +71,10 @@ router.post("/api/deleteURL", async (ctx) => {
   }
 
   // authorise
-  if (userName !== config.USER_NAME || userPass !== config.USER_PASS) {
+  if (
+    userName !== config.SHORTENER_USERNAME ||
+    userPass !== config.SHORTENER_PASSWORD
+  ) {
     ctx.response.status = 401;
     ctx.response.body = { error: "Unauthorized" };
     return;
