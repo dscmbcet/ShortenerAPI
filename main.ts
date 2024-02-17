@@ -4,7 +4,7 @@ GDSC MBCET
 */
 
 import { Application, Router } from "oak";
-import { createShortURL, getURL } from "./database.ts";
+import { createShortURL, getURL, deleteURL } from "./database.ts";
 
 import config from "$env";
 
@@ -36,6 +36,27 @@ router.post("/api/shorten", async (ctx) => {
 });
 
 router.post("/api/getURL", async (ctx) => {
+  const { hash, userName, userPass, userIp } = await ctx.request.body().value;
+
+  if (!hash || !userName || !userPass || !userIp) {
+    ctx.response.status = 400;
+    ctx.response.body = { error: "Invalid request" };
+    return;
+  }
+
+  // authorise
+  if (userName !== config.USER_NAME || userPass !== config.USER_PASS) {
+    ctx.response.status = 401;
+    ctx.response.body = { error: "Unauthorized" };
+    return;
+  }
+
+  const url = await getURL(hash, userIp);
+  if (!url) ctx.response.body = { error: "Not found" };
+  else return (ctx.response.body = { error: null, ...url });
+});
+
+router.post("/api/deleteURL", async (ctx) => {
   const { hash, userName, userPass } = await ctx.request.body().value;
   if (!hash || !userName || !userPass) {
     ctx.response.status = 400;
@@ -50,9 +71,9 @@ router.post("/api/getURL", async (ctx) => {
     return;
   }
 
-  const url = await getURL(hash);
-  if (!url) ctx.response.body = { error: "Not found" };
-  else return (ctx.response.body = { error: null, ...url });
+  // delete hash
+  await deleteURL(hash);
+  ctx.response.body = { error: null };
 });
 
 const app = new Application();

@@ -27,6 +27,7 @@ interface URLStorageSchema {
   createdAt: Date;
   clicks: number;
   uniqueClicks: number;
+  ips: string[];
 }
 
 const URLStorage = db.collection<URLStorageSchema>("URLStorage");
@@ -47,15 +48,36 @@ async function createShortURL(url: string, hash: string) {
     createdAt: new Date(),
     clicks: 0,
     uniqueClicks: 0,
+    ips: [],
   });
 
   return true;
 }
 
-async function getURL(hash: string) {
+async function getURL(hash: string, userIp: string) {
   hash = hash.toLowerCase();
   const result = await URLStorage.findOne({ hash });
+  if (!result) return null;
+  result.clicks++;
+  if (!result.ips.includes(userIp)) {
+    result.uniqueClicks++;
+    result.ips.push(userIp);
+  }
+  await URLStorage.updateOne(
+    { hash },
+    {
+      $set: {
+        ...result,
+      },
+    }
+  );
   return result;
 }
 
-export { createShortURL, getURL };
+async function deleteURL(hash: string) {
+  hash = hash.toLowerCase();
+  const result = await URLStorage.deleteOne({ hash });
+  return result;
+}
+
+export { createShortURL, getURL, deleteURL };
