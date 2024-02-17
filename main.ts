@@ -4,7 +4,13 @@ GDSC MBCET
 */
 
 import { Application, Router } from "oak";
-import { createShortURL, getURL, deleteURL } from "./database.ts";
+import {
+  createShortURL,
+  getURL,
+  deleteURL,
+  getAllURLs,
+  editURL,
+} from "./database.ts";
 
 import config from "$env";
 
@@ -86,6 +92,63 @@ router.post("/api/deleteURL", async (ctx) => {
 
   // delete hash
   await deleteURL(hash);
+  ctx.response.body = { error: null };
+});
+
+router.post("/api/getAll", async (ctx) => {
+  const { userName, userPass } = await ctx.request.body().value;
+  if (!userName || !userPass) {
+    ctx.response.status = 400;
+    ctx.response.body = { error: "Invalid request" };
+    return;
+  }
+
+  // authorise
+  if (
+    userName !== config.SHORTENER_USERNAME ||
+    userPass !== config.SHORTENER_PASSWORD
+  ) {
+    ctx.response.status = 401;
+    ctx.response.body = { error: "Unauthorized" };
+    return;
+  }
+
+  // get all hashes
+  const all = await getAllURLs();
+  if (!all) ctx.response.body = { error: "None Added." };
+  ctx.response.body = { error: null, data: all };
+});
+
+router.post("/api/editURL", async (ctx) => {
+  const { hash, userName, userPass, url } = await ctx.request.body().value;
+  if (!hash || !userName || !userPass || !url) {
+    ctx.response.status = 400;
+    ctx.response.body = { error: "Invalid request" };
+    return;
+  }
+
+  // authorise
+  if (
+    userName !== config.SHORTENER_USERNAME ||
+    userPass !== config.SHORTENER_PASSWORD
+  ) {
+    ctx.response.status = 401;
+    ctx.response.body = { error: "Unauthorized" };
+    return;
+  }
+  try {
+    if (await editURL(hash, url))
+      return (ctx.response.body = { error: null, message: "Updated" });
+    else
+      return (ctx.response.body = {
+        error: "Not found",
+        message: "Hash not found",
+      });
+  } catch (e) {
+    ctx.response.status = 400;
+    ctx.response.body = { error: "Something went wrong.", message: e.message };
+    return;
+  }
   ctx.response.body = { error: null };
 });
 

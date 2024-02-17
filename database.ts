@@ -80,4 +80,18 @@ async function deleteURL(hash: string) {
   return result;
 }
 
-export { createShortURL, getURL, deleteURL };
+async function getAllURLs() {
+  const result = await URLStorage.find({}).toArray();
+  return result;
+}
+
+async function editURL(hash: string, url: string) {
+  hash = hash.toLowerCase();
+  if (!(await doesHashExist(hash))) {
+    return false;
+  }
+  await URLStorage.updateOne({ hash }, { $set: { url: url } });
+  return true;
+}
+
+export { createShortURL, getURL, deleteURL, getAllURLs, editURL };
