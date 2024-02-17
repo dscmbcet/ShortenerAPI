@@ -10,6 +10,10 @@ import config from "$env";
 
 const router = new Router();
 
+router.get("/", async (ctx) => {
+  ctx.response.redirect("https://gdscmbcet.com");
+});
+
 router.post("/api/shorten", async (ctx) => {
   const { url, hash, userName, userPass } = await ctx.request.body().value;
   if (!url || !hash || !userName || !userPass) {
