@@ -90,6 +90,18 @@ router.post("/api/deleteURL", async (ctx) => {
 });
 
 const app = new Application();
+app.use(async (ctx, next) => {
+  ctx.response.headers.set("Access-Control-Allow-Origin", "*");
+  ctx.response.headers.set(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
+  ctx.response.headers.set(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, OPTIONS"
+  );
+  await next();
+});
 app.use(router.routes());
 app.use(router.allowedMethods());
 
